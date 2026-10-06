@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Ingresar')}"></head>
+<body>
+<div class="marco marco-login">
+    <main class="login hud">
+        <p class="logo">JComponentes</p>
+        <h1 class="panel-titulo">Acceso admin</h1>
+
+        <p th:if="${param.error}" class="aviso-error" role="alert">Usuario o contraseña incorrectos.</p>
+        <p th:if="${param.bloqueado}" class="aviso-error" role="alert">
+            Demasiados intentos fallidos. Probá de nuevo en 15 minutos.
+        </p>
+        <p th:if="${param.salio}" class="aviso-ok" role="status">Cerraste sesión.</p>
+
+        <!-- th:action agrega solo el token CSRF oculto -->
+        <form method="post" th:action="@{/admin/login}" class="admin-form">
+            <div class="campo">
+                <label for="usuario">Usuario</label>
+                <input id="usuario" name="username" autocomplete="username" required autofocus>
+            </div>
+            <div class="campo">
+                <label for="clave">Contraseña</label>
+                <input id="clave" type="password" name="password" autocomplete="current-password" required>
+            </div>
+            <label class="check">
+                <input type="checkbox" name="recordarme"> Recordarme en este dispositivo (30 días)
+            </label>
+            <button type="submit" class="btn-neon btn-cian">Entrar</button>
+        </form>
+        <a class="volver" th:href="@{/}">← Volver a la tienda</a>
+    </main>
+</div>
+</body>
+</html>

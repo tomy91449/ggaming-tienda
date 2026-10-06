@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Catálogo')}"></head>
+<body>
+<a class="saltar" href="#productos">Saltar a los productos</a>
+
+<div class="marco">
+<header th:replace="~{fragments/layout :: encabezado}"></header>
+
+<!--
+  Layout de 3 paneles como la referencia:
+  [ CATÁLOGO ] [ PRODUCTOS ] [ CARRITO ]
+  En celular se apilan y el carrito pasa a ser un panel deslizable.
+-->
+<div class="layout">
+
+    <!-- Panel izquierdo: categorías (en celular, fila de chips deslizable) -->
+    <nav class="categorias hud" aria-label="Categorías">
+        <h2 class="panel-titulo">Catálogo</h2>
+        <ul>
+            <li>
+                <a th:href="${q != null} ? @{/(q=${q})} : @{/}"
+                   th:attr="aria-current=${categoriaActual == null} ? 'page'">Todo</a>
+            </li>
+            <li th:each="c : ${categorias}">
+                <a th:href="${q != null} ? @{/(categoria=${c.name()},q=${q})} : @{/(categoria=${c.name()})}"
+                   th:attr="aria-current=${c == categoriaActual} ? 'page'"
+                   th:text="${c.etiqueta}">Categoría</a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Panel central: grilla de productos -->
+    <main class="vitrina hud" id="productos">
+        <div class="vitrina-cabecera">
+            <h1 class="panel-titulo"
+                th:text="${categoriaActual != null} ? ${categoriaActual.etiqueta} : 'En stock'">En stock</h1>
+            <p class="contador">
+                <span th:text="${#lists.size(productos)}">0</span> productos
+                <span th:if="${q}" th:text="'· «' + ${q} + '»'"></span>
+            </p>
+        </div>
+
+        <p th:if="${#lists.isEmpty(productos)}" class="vacio">
+            No encontramos productos con ese filtro.
+            <a th:href="@{/}">Ver todo el catálogo</a>
+        </p>
+
+        <section class="grilla" aria-label="Productos">
+            <!-- Los data-* le pasan al JS los datos que necesita el carrito -->
+            <article th:each="p : ${productos}" class="tarjeta hud"
+                     th:classappend="${p.vendido} ? 'vendido'"
+                     th:attr="data-id=${p.id}, data-nombre=${p.nombre}, data-precio=${p.precio}">
+
+                <span class="tag" th:text="${p.vendido} ? 'Vendido' : 'En stock'">En stock</span>
+
+                <div class="tarjeta-foto">
+                    <img th:if="${p.foto}" th:src="@{${p.foto}}" th:alt="${p.nombre}"
+                         loading="lazy" width="400" height="400">
+                    <!-- th:block: th:replace corre antes que th:unless, por eso la condición va afuera -->
+                    <th:block th:unless="${p.foto}">
+                        <svg th:replace="~{fragments/iconos :: categoria(${p.categoria.name()})}"></svg>
+                    </th:block>
+                </div>
+
+                <h3 class="tarjeta-nombre" th:text="${p.nombre}">Nombre</h3>
+                <p class="tarjeta-desc" th:text="${p.descripcion}">Descripción</p>
+                <span class="pastilla" th:text="${p.categoria.etiqueta}">Categoría</span>
+
+                <div class="tarjeta-pie">
+                    <!-- Solo se puede agregar al carrito si está disponible -->
+                    <button th:unless="${p.vendido}" type="button" class="btn-agregar" data-agregar>
+                        Añadir al carrito
+                    </button>
+                    <span class="precio">
+                        $<span th:text="${#numbers.formatInteger(p.precio, 1, 'POINT')}">0</span>
+                    </span>
+                </div>
+            </article>
+        </section>
+    </main>
+
+    <!-- Panel derecho: carrito. En escritorio queda fijo; en celular se desliza. -->
+    <aside class="carrito hud" id="carrito" data-carrito
+           th:attr="data-whatsapp=${whatsapp}" aria-labelledby="carrito-titulo">
+        <div class="carrito-cabecera">
+            <svg th:replace="~{fragments/iconos :: carrito}"></svg>
+            <h2 class="panel-titulo" id="carrito-titulo">Carrito de compras</h2>
+            <button type="button" class="btn-cerrar" data-cerrar-carrito aria-label="Cerrar carrito">
+                <svg th:replace="~{fragments/iconos :: cerrar}"></svg>
+            </button>
+        </div>
+
+        <div class="carrito-columnas" aria-hidden="true">
+            <span>Producto</span><span>Cant.</span><span>Subtotal</span>
+        </div>
+
+        <!-- El JS dibuja acá un renglón por producto -->
+        <ul class="carrito-items" data-carrito-items></ul>
+        <p class="vacio" data-carrito-vacio>Todavía no agregaste productos.</p>
+
+        <div class="carrito-resumen">
+            <p class="carrito-total">
+                Total ref.: <strong>$<span data-carrito-total>0</span></strong>
+            </p>
+
+            <label class="oferta" for="oferta">¿Cuánto te gustaría pagar?</label>
+            <!-- inputmode="numeric" abre el teclado de números en el celular -->
+            <input id="oferta" class="oferta-input" type="text" inputmode="numeric"
+                   maxlength="10" placeholder="Ej: 350000" autocomplete="off"
+                   aria-describedby="oferta-ayuda oferta-error" data-oferta>
+            <small id="oferta-error" class="error" data-oferta-error hidden>Ingresá solo números.</small>
+            <small id="oferta-ayuda" class="aviso">Por cantidad se negocia.</small>
+
+            <button type="button" class="btn-neon btn-cian" data-enviar>
+                Cargar y enviar por WhatsApp
+            </button>
+            <button type="button" class="btn-neon btn-magenta" data-vaciar>
+                Vaciar carrito
+            </button>
+        </div>
+    </aside>
+</div>
+</div>
+
+<!-- Celular/tablet: botón flotante para abrir el carrito y velo oscuro detrás -->
+<button type="button" class="btn-flotante" data-abrir-carrito aria-controls="carrito" aria-expanded="false">
+    <svg th:replace="~{fragments/iconos :: carrito}"></svg>
+    <span>Carrito (<span data-carrito-cantidad>0</span>)</span>
+</button>
+<div class="velo" data-velo hidden></div>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

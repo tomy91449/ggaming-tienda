@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!-- Fragmentos del panel admin: encabezado y avisos (mensajes de éxito/error) -->
+
+<header th:fragment="encabezado" class="cabecera cabecera-admin hud">
+    <a th:href="@{/admin}" class="logo">JComponentes</a>
+    <span class="etiqueta-admin">Panel admin</span>
+    <nav class="admin-nav" aria-label="Admin">
+        <a class="btn-chico" th:href="@{/admin}">Productos</a>
+        <a class="btn-chico" th:href="@{/admin/ventas}">Ventas</a>
+        <a class="btn-chico btn-ia-nav" th:href="@{/admin/asistente}">Asistente IA</a>
+        <a class="btn-chico" th:href="@{/}" target="_blank" rel="noopener">Ver tienda</a>
+        <!-- Cerrar sesión es POST (con token CSRF), no un link: así otro sitio no puede desloguearte -->
+        <form method="post" th:action="@{/admin/logout}">
+            <button type="submit" class="btn-chico">Salir</button>
+        </form>
+    </nav>
+</header>
+
+<th:block th:fragment="avisos">
+    <p th:if="${mensaje}" class="aviso-ok" role="status" th:text="${mensaje}">Guardado.</p>
+    <p th:if="${error}" class="aviso-error" role="alert" th:text="${error}">Error.</p>
+</th:block>
+
+</html>

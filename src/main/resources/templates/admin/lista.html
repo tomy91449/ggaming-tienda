@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Admin')}"></head>
+<body>
+<div class="marco">
+<header th:replace="~{fragments/admin :: encabezado}"></header>
+
+<main class="vitrina hud admin">
+    <div class="vitrina-cabecera">
+        <h1 class="panel-titulo">Productos</h1>
+        <a class="btn-neon btn-cian btn-nuevo" th:href="@{/admin/productos/nuevo}">+ Nuevo producto</a>
+    </div>
+
+    <th:block th:replace="~{fragments/admin :: avisos}"></th:block>
+
+    <p class="contador">
+        <span th:text="${#lists.size(productos)}">0</span> productos ·
+        <span th:text="${#lists.size(productos.?[!vendido])}">0</span> disponibles
+    </p>
+
+    <p th:if="${#lists.isEmpty(productos)}" class="vacio">Todavía no cargaste productos.</p>
+
+    <ul class="admin-lista">
+        <li th:each="p : ${productos}" class="admin-item" th:classappend="${p.vendido} ? 'vendido'">
+            <div class="admin-mini">
+                <img th:if="${p.foto}" th:src="@{${p.foto}}" alt="" loading="lazy" width="80" height="80">
+                <th:block th:unless="${p.foto}">
+                    <svg th:replace="~{fragments/iconos :: categoria(${p.categoria.name()})}"></svg>
+                </th:block>
+            </div>
+
+            <div class="admin-datos">
+                <a class="admin-nombre" th:href="@{/admin/productos/{id}(id=${p.id})}" th:text="${p.nombre}">Nombre</a>
+                <span class="admin-detalle">
+                    <span th:text="${p.categoria.etiqueta}">Categoría</span> ·
+                    $<span th:text="${#numbers.formatInteger(p.precio, 1, 'POINT')}">0</span>
+                </span>
+                <span class="pastilla" th:classappend="${p.vendido} ? 'pastilla-vendido'"
+                      th:text="${p.vendido} ? 'Vendido' : 'Disponible'">Disponible</span>
+            </div>
+
+            <div class="admin-acciones">
+                <a class="btn-chico" th:href="@{/admin/productos/{id}(id=${p.id})}">Editar</a>
+                <!-- Vender pregunta a cuánto se vendió (memoria de precios) -->
+                <a th:unless="${p.vendido}" class="btn-chico"
+                   th:href="@{/admin/productos/{id}/vender(id=${p.id})}">Marcar vendido</a>
+                <form th:if="${p.vendido}" method="post" th:action="@{/admin/productos/{id}/disponible(id=${p.id})}">
+                    <button type="submit" class="btn-chico">Volver a disponible</button>
+                </form>
+                <form method="post" th:action="@{/admin/productos/{id}/borrar(id=${p.id})}"
+                      th:attr="data-confirmar=|¿Borrar «${p.nombre}»? No se puede deshacer.|">
+                    <button type="submit" class="btn-chico btn-peligro">Borrar</button>
+                </form>
+            </div>
+        </li>
+    </ul>
+</main>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

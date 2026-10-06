@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Ventas')}"></head>
+<body>
+<div class="marco">
+<header th:replace="~{fragments/admin :: encabezado}"></header>
+
+<main class="vitrina hud admin">
+    <div class="vitrina-cabecera">
+        <h1 class="panel-titulo">Historial de ventas</h1>
+        <p class="contador">
+            <span th:text="${#lists.size(ventas)}">0</span> ventas · total
+            $<span th:text="${#numbers.formatInteger(totalVendido, 1, 'POINT')}">0</span>
+        </p>
+    </div>
+
+    <p th:if="${#lists.isEmpty(ventas)}" class="vacio">
+        Todavía no registraste ventas. Usá "Marcar vendido" en la lista de productos.
+    </p>
+
+    <!-- Lista (en celular) que se ve como tabla en pantallas anchas -->
+    <ul class="ventas-lista" th:unless="${#lists.isEmpty(ventas)}">
+        <li class="venta-item venta-cabecera" aria-hidden="true">
+            <span>Fecha</span><span>Producto</span><span>Publicado</span><span>Vendido</span><span>Dif.</span>
+        </li>
+        <li th:each="v : ${ventas}" class="venta-item">
+            <span class="venta-fecha" th:text="${#temporals.format(v.fecha, 'dd/MM/yyyy')}">01/01/2026</span>
+            <span class="venta-nombre">
+                <strong th:text="${v.nombre}">Producto</strong>
+                <small th:text="${v.categoria.etiqueta}">Categoría</small>
+            </span>
+            <span class="venta-publicado">
+                <small class="solo-movil">Publicado </small>$<span th:text="${#numbers.formatInteger(v.precioPublicado, 1, 'POINT')}">0</span>
+            </span>
+            <span class="venta-vendido">
+                <small class="solo-movil">Vendido </small>$<span th:text="${#numbers.formatInteger(v.precioVenta, 1, 'POINT')}">0</span>
+            </span>
+            <span class="venta-dif" th:classappend="${v.precioVenta < v.precioPublicado} ? 'negativa'"
+                  th:with="pct=${v.precioPublicado == 0 ? 0 : (v.precioVenta - v.precioPublicado) * 100 / v.precioPublicado}"
+                  th:text="${pct > 0 ? '+' : ''} + ${pct} + '%'">0%</span>
+        </li>
+    </ul>
+</main>
+</div>
+</body>
+</html>

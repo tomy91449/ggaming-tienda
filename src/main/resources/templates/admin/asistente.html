@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Asistente IA')}"></head>
+<body>
+<div class="marco">
+<header th:replace="~{fragments/admin :: encabezado}"></header>
+
+<!-- data-csrf: el JS lo manda en la cabecera de cada pedido (protección CSRF) -->
+<main class="vitrina hud admin chat" data-chat
+      th:attr="data-csrf=${_csrf.token},data-csrf-header=${_csrf.headerName}">
+    <div class="vitrina-cabecera">
+        <h1 class="panel-titulo">Asistente IA</h1>
+        <p class="contador" th:text="${nombreIa}">Gemini</p>
+    </div>
+
+    <p th:unless="${iaDisponible}" class="aviso-error" role="alert">
+        La IA está desactivada: falta tu API key. Pegala en el archivo <code>.env</code>
+        (GEMINI_API_KEY=...) y reiniciá la app. La conseguís gratis en aistudio.google.com/apikey.
+    </p>
+
+    <p class="aviso">
+        Preguntame sobre tu stock, tus ventas y tus precios, o cualquier duda de hardware.
+        Conozco todos tus productos y tu historial de ventas.
+    </p>
+
+    <!-- Preguntas de ejemplo: un toque y se envían -->
+    <div class="chat-ejemplos">
+        <button type="button" class="btn-chico" data-ejemplo>¿Qué tengo disponible en placas de video?</button>
+        <button type="button" class="btn-chico" data-ejemplo>¿Cuánto vendí este mes y el anterior?</button>
+        <button type="button" class="btn-chico" data-ejemplo>¿A cuánto vendí la última RTX 3060?</button>
+        <button type="button" class="btn-chico" data-ejemplo>¿Qué precios de mi catálogo te parecen altos o bajos?</button>
+    </div>
+
+    <ol class="chat-mensajes" data-chat-mensajes aria-live="polite"></ol>
+
+    <form class="chat-form" data-chat-form>
+        <label for="pregunta" class="sr-only">Tu pregunta</label>
+        <textarea id="pregunta" rows="2" maxlength="1000" placeholder="Escribí tu pregunta..." required
+                  data-chat-pregunta></textarea>
+        <button type="submit" class="btn-neon btn-cian" th:disabled="${!iaDisponible}">Enviar</button>
+    </form>
+</main>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

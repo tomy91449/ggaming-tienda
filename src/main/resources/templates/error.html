@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<!--
+  Página de error propia: Spring la usa automáticamente para 404, 400, 500...
+  No muestra detalles internos (eso se configura en application.properties).
+-->
+<head th:replace="~{fragments/layout :: head('Error')}"></head>
+<body>
+<div class="marco">
+    <header th:replace="~{fragments/layout :: encabezado}"></header>
+    <main class="vitrina hud error-pagina">
+        <h1 class="panel-titulo" th:text="'Error ' + ${status}">Error</h1>
+        <p th:text="${status == 404} ? 'Esta página no existe.' : 'Algo salió mal con este pedido.'">
+            Algo salió mal.
+        </p>
+        <a class="btn-neon btn-cian" th:href="@{/}">Volver al catálogo</a>
+    </main>
+</div>
+</body>
+</html>

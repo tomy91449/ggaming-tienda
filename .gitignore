@@ -1,0 +1,9 @@
+target/
+*.db
+uploads/
+.idea/
+.vscode/
+
+# Secretos: el .env NUNCA se sube a git (tiene contraseñas y API keys).
+# El que se sube es .env.example, sin valores reales.
+.env

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!--
+  FRAGMENTOS reutilizables. Cada página los incluye con th:replace,
+  así el <head> y el encabezado se escriben una sola vez.
+-->
+
+<head th:fragment="head(titulo)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${titulo} + ' | JComponentes'">JComponentes</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
+    <!-- Orbitron (logo y títulos estilo HUD) + Rajdhani (texto, condensada como en el diseño) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Rajdhani:wght@500;600;700&display=swap">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+
+<!-- Encabezado: logo centrado + buscador a la derecha (como la referencia) -->
+<header th:fragment="encabezado" class="cabecera hud">
+    <a th:href="@{/}" class="logo">JComponentes</a>
+
+    <form class="buscador" method="get" th:action="@{/}" role="search">
+        <span class="buscador-chip"><svg th:replace="~{fragments/iconos :: chip}"></svg></span>
+        <!-- Al buscar se mantiene la categoría elegida -->
+        <input th:if="${categoriaActual}" type="hidden" name="categoria" th:value="${categoriaActual.name()}">
+        <input type="search" name="q" th:value="${q}" maxlength="60"
+               placeholder="BUSCAR PRODUCTOS" aria-label="Buscar productos">
+        <button type="submit" class="buscador-boton" aria-label="Buscar">
+            <svg th:replace="~{fragments/iconos :: buscar}"></svg>
+        </button>
+    </form>
+</header>
+
+</html>

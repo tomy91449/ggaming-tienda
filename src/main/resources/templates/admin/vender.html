@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Registrar venta')}"></head>
+<body>
+<div class="marco">
+<header th:replace="~{fragments/admin :: encabezado}"></header>
+
+<main class="vitrina hud admin">
+    <a class="volver" th:href="@{/admin}">← Volver a la lista</a>
+    <h1 class="panel-titulo">Registrar venta</h1>
+    <th:block th:replace="~{fragments/admin :: avisos}"></th:block>
+
+    <p class="admin-subtitulo">
+        <strong th:text="${producto.nombre}">Producto</strong> · publicado a
+        $<span th:text="${#numbers.formatInteger(producto.precio, 1, 'POINT')}">0</span>
+    </p>
+
+    <form method="post" th:action="@{/admin/productos/{id}/vender(id=${producto.id})}" class="admin-form">
+        <div class="campo">
+            <label for="precioVenta">¿A cuánto lo vendiste? ($)</label>
+            <input id="precioVenta" name="precioVenta" type="number" min="0" step="1" inputmode="numeric"
+                   required th:value="${producto.precio}" autofocus>
+            <small class="aviso">
+                Se guarda en el historial: la próxima vez que cargues este modelo (o uno parecido)
+                te va a recordar a cuánto lo vendiste.
+            </small>
+        </div>
+        <button type="submit" class="btn-neon btn-cian">Confirmar venta</button>
+    </form>
+</main>
+</div>
+</body>
+</html>

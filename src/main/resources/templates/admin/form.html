@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${id == null} ? 'Nuevo producto' : 'Editar producto')}"></head>
+<body>
+<div class="marco">
+<header th:replace="~{fragments/admin :: encabezado}"></header>
+
+<main class="vitrina hud admin">
+    <a class="volver" th:href="@{/admin}">← Volver a la lista</a>
+    <h1 class="panel-titulo" th:text="${id == null} ? 'Nuevo producto' : 'Editar producto'">Producto</h1>
+
+    <th:block th:replace="~{fragments/admin :: avisos}"></th:block>
+
+    <!--
+      enctype multipart: necesario para subir archivos.
+      th:object + th:field: Thymeleaf llena los campos y muestra los errores de validación.
+    -->
+    <form th:object="${form}" method="post" enctype="multipart/form-data" class="admin-form"
+          th:action="${id == null} ? @{/admin/productos} : @{/admin/productos/{id}(id=${id})}" data-guardar>
+
+        <div class="campo">
+            <label for="nombre">Nombre</label>
+            <input id="nombre" th:field="*{nombre}" maxlength="120" required
+                   placeholder="Ej: NVIDIA RTX 3060 12GB" th:errorclass="con-error">
+            <small class="error" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}">Error</small>
+        </div>
+
+        <!--
+          PANEL IA: con solo el nombre busca en tu historial (¿ya lo vendiste?) y,
+          si hay API key, Gemini propone categoría, descripción, ficha y precio.
+          El JS completa este bloque; los botones "Usar" copian cada dato al formulario.
+        -->
+        <div class="ia-panel" data-ia
+             th:attr="data-csrf=${_csrf.token},data-csrf-header=${_csrf.headerName},data-ia-activa=${iaDisponible}">
+            <button type="button" class="btn-neon btn-magenta" data-ia-sugerir
+                    th:text="${iaDisponible} ? '✨ Analizar con IA' : 'Buscar en mi historial'">✨ Analizar con IA</button>
+            <small class="aviso" th:unless="${iaDisponible}">
+                IA desactivada (falta GEMINI_API_KEY en el .env). Igual busca en tu historial de ventas.
+            </small>
+            <div class="ia-resultado" data-ia-resultado hidden aria-live="polite"></div>
+        </div>
+
+        <div class="campo">
+            <label for="descripcion">Descripción</label>
+            <textarea id="descripcion" th:field="*{descripcion}" rows="4" maxlength="2000"
+                      placeholder="Marca, modelo, estado, si tiene caja..."></textarea>
+            <small class="error" th:if="${#fields.hasErrors('descripcion')}" th:errors="*{descripcion}">Error</small>
+        </div>
+
+        <div class="campos-fila">
+            <div class="campo">
+                <label for="categoria">Categoría</label>
+                <select id="categoria" th:field="*{categoria}" required th:errorclass="con-error">
+                    <option value="">Elegí una...</option>
+                    <option th:each="c : ${categorias}" th:value="${c.name()}" th:text="${c.etiqueta}">Cat</option>
+                </select>
+                <small class="error" th:if="${#fields.hasErrors('categoria')}" th:errors="*{categoria}">Error</small>
+            </div>
+
+            <div class="campo">
+                <label for="precio">Precio referencial ($)</label>
+                <input id="precio" type="number" th:field="*{precio}" min="0" step="1" inputmode="numeric"
+                       required placeholder="Ej: 380000" th:errorclass="con-error">
+                <small class="error" th:if="${#fields.hasErrors('precio')}" th:errors="*{precio}">Error</small>
+            </div>
+        </div>
+
+        <label class="check">
+            <input type="checkbox" th:field="*{vendido}"> Ya está vendido
+        </label>
+
+        <div class="campo">
+            <label for="fotos">Agregar fotos</label>
+            <!-- accept="image/*": en el celular ofrece cámara o galería -->
+            <input id="fotos" type="file" name="fotos" accept="image/*" multiple data-fotos
+                   th:attr="data-max=${maxFotos - (fotos != null ? #lists.size(fotos) : 0)}">
+            <small class="aviso">
+                Podés elegir varias (máx. <span th:text="${maxFotos}">10</span> por producto).
+                Se enderezan, achican y comprimen solas.
+            </small>
+            <small class="error" th:if="${errorFotos}" th:text="${errorFotos}" role="alert">Error</small>
+            <small class="error" data-fotos-error hidden></small>
+            <ul class="fotos-grilla fotos-preview" data-fotos-preview></ul>
+        </div>
+
+        <button type="submit" class="btn-neon btn-cian">Guardar</button>
+    </form>
+
+    <!-- Fotos actuales (solo al editar). Van fuera del formulario principal porque
+         HTML no permite formularios dentro de formularios. -->
+    <section th:if="${id != null}" class="admin-fotos" aria-labelledby="titulo-fotos">
+        <h2 class="panel-titulo" id="titulo-fotos">
+            Fotos (<span th:text="${#lists.size(fotos)}">0</span>/<span th:text="${maxFotos}">10</span>)
+        </h2>
+        <p th:if="${#lists.isEmpty(fotos)}" class="vacio">Este producto todavía no tiene fotos.</p>
+
+        <ul class="fotos-grilla">
+            <li th:each="f : ${fotos}" class="foto-item"
+                th:classappend="${f.ruta == producto.foto} ? 'principal'">
+                <img th:src="@{${f.ruta}}" alt="Foto del producto" loading="lazy" width="300" height="300">
+                <span th:if="${f.ruta == producto.foto}" class="tag">Principal</span>
+                <div class="foto-acciones">
+                    <form th:unless="${f.ruta == producto.foto}" method="post"
+                          th:action="@{/admin/fotos/{id}/principal(id=${f.id})}">
+                        <button type="submit" class="btn-chico">Hacer principal</button>
+                    </form>
+                    <form method="post" th:action="@{/admin/fotos/{id}/borrar(id=${f.id})}"
+                          data-confirmar="¿Borrar esta foto?">
+                        <button type="submit" class="btn-chico btn-peligro">Borrar</button>
+                    </form>
+                </div>
+            </li>
+        </ul>
+
+        <form method="post" th:action="@{/admin/productos/{id}/borrar(id=${id})}" class="zona-peligro"
+              th:attr="data-confirmar=|¿Borrar «${producto.nombre}» con todas sus fotos? No se puede deshacer.|">
+            <button type="submit" class="btn-chico btn-peligro">Borrar este producto</button>
+        </form>
+    </section>
+</main>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>
