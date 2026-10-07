@@ -8,7 +8,7 @@
 <head th:fragment="head(titulo)">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${titulo} + ' | JComponentes'">JComponentes</title>
+    <title th:text="${titulo} + ' | GGaming'">GGaming</title>
     <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
     <!-- Orbitron (logo y títulos estilo HUD) + Rajdhani (texto, condensada como en el diseño) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +20,7 @@
 
 <!-- Encabezado: logo centrado + buscador a la derecha (como la referencia) -->
 <header th:fragment="encabezado" class="cabecera hud">
-    <a th:href="@{/}" class="logo">JComponentes</a>
+    <a th:href="@{/}" class="logo">GGaming</a>
 
     <form class="buscador" method="get" th:action="@{/}" role="search">
         <span class="buscador-chip"><svg th:replace="~{fragments/iconos :: chip}"></svg></span>

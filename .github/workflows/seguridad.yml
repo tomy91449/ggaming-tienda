@@ -1,0 +1,92 @@
+# Revisión automática en GitHub Actions: tests + pentest con Strix.
+#
+# Se ejecuta en cada Pull Request y también a mano (pestaña Actions → "Seguridad" → Run workflow).
+#
+# Para que Strix funcione, cargá dos "secrets" en GitHub
+# (repo → Settings → Secrets and variables → Actions → New repository secret):
+#   STRIX_LLM    = modelo de IA en formato LiteLLM, por ejemplo: gemini/gemini-3.5-flash
+#   LLM_API_KEY  = la API key de ese proveedor (puede ser la misma de Google AI Studio)
+# Sin esos secrets, el paso de Strix se saltea con un aviso y los tests corren igual.
+
+name: Seguridad
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Compilar y correr tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Tests
+        run: |
+          chmod +x mvnw
+          ./mvnw -B verify
+
+  strix:
+    name: Pentest con Strix
+    runs-on: ubuntu-latest   # los runners de GitHub ya traen Docker
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0     # necesario para que Strix analice solo lo que cambió en el PR
+
+      - name: ¿Están configurados los secrets?
+        id: secretos
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        run: |
+          if [ -z "$LLM_API_KEY" ]; then
+            echo "::warning::Faltan los secrets STRIX_LLM / LLM_API_KEY: se saltea Strix."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Instalar Strix
+        if: steps.secretos.outputs.ok == 'true'
+        run: curl -sSL https://strix.ai/install | bash
+
+      - name: Escanear
+        if: steps.secretos.outputs.ok == 'true'
+        env:
+          STRIX_LLM: ${{ secrets.STRIX_LLM }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        run: |
+          # En un PR: modo rápido y solo los archivos cambiados. A mano: el proyecto entero.
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            MODO="--scan-mode quick --scope-mode diff --diff-base origin/${{ github.base_ref }}"
+          else
+            MODO="--scan-mode standard --scope-mode full"
+          fi
+          strix -n -t ./ $MODO --max-budget 10 \
+            --instruction "App Spring Boot + Thymeleaf + SQLite. Panel /admin con login de un solo usuario (Spring Security, CSRF), subida de fotos (ImageIO) y API JSON /admin/ia/* que llama a Gemini. Priorizar: control de acceso del admin, subida de archivos, XSS guardado, inyección SQL y SSRF."
+
+      # Que no "pase" en falso: si Strix se quedó sin presupuesto, el escaneo no está completo.
+      - name: Verificar que el escaneo terminó
+        if: steps.secretos.outputs.ok == 'true'
+        run: |
+          run_json=$(ls -t strix_runs/*/run.json | head -1)
+          estado=$(jq -r .status "$run_json")
+          if [ "$estado" != "completed" ]; then
+            echo "Strix terminó con estado '$estado' (¿se quedó sin presupuesto?). Subí --max-budget." >&2
+            exit 1
+          fi
+
+      - name: Guardar el informe
+        if: always() && steps.secretos.outputs.ok == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: informe-strix
+          path: strix_runs/

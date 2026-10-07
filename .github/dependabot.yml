@@ -1,0 +1,14 @@
+# Dependabot: GitHub revisa las librerías una vez por semana y, si sale un parche
+# (sobre todo de seguridad), abre un Pull Request con la actualización lista.
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

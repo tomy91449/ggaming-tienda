@@ -8,18 +8,26 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.6</version>
+        <version>3.5.16</version>
         <relativePath/>
     </parent>
 
-    <groupId>com.jcomponentes</groupId>
-    <artifactId>jcomponentes</artifactId>
+    <groupId>com.ggaming</groupId>
+    <artifactId>ggaming</artifactId>
     <version>0.1.0</version>
-    <name>JComponentes</name>
+    <name>GGaming</name>
     <description>Venta de hardware de PC con pedido por WhatsApp</description>
 
     <properties>
         <java.version>21</java.version>
+        <!--
+          Parches de seguridad más nuevos que los que trae Spring Boot 3.5.16
+          (revisado contra la base de vulnerabilidades OSV.dev el 2026-10-06).
+          Al actualizar Spring Boot, revisar si estas líneas siguen haciendo falta.
+        -->
+        <tomcat.version>10.1.60</tomcat.version>
+        <jackson-bom.version>2.21.7</jackson-bom.version>
+        <log4j2.version>2.25.5</log4j2.version>
     </properties>
 
     <dependencies>
@@ -38,7 +46,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
-        <!-- Driver de SQLite: la base es un único archivo jcomponentes.db -->
+        <!-- Driver de SQLite: la base es un único archivo ggaming.db -->
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
@@ -57,18 +65,18 @@
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-webp</artifactId>
-            <version>3.12.0</version>
+            <version>3.15.3</version>
         </dependency>
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-jpeg</artifactId>
-            <version>3.12.0</version>
+            <version>3.15.3</version>
         </dependency>
         <!-- Lee la orientación EXIF: sin esto, las fotos del celular salen giradas -->
         <dependency>
             <groupId>com.drewnoakes</groupId>
             <artifactId>metadata-extractor</artifactId>
-            <version>2.19.0</version>
+            <version>2.21.0</version>
         </dependency>
         <!-- Tests automáticos (JUnit) -->
         <dependency>

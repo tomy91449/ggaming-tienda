@@ -7,3 +7,6 @@ uploads/
 # Secretos: el .env NUNCA se sube a git (tiene contraseñas y API keys).
 # El que se sube es .env.example, sin valores reales.
 .env
+
+# Informes de Strix (pueden contener detalles de ataques)
+strix_runs/

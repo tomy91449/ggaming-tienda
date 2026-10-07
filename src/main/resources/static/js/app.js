@@ -3,7 +3,7 @@
 // Formato guardado: { "1": { nombre: "...", precio: 380000, cantidad: 2 }, ... }
 // =====================================================================
 
-var CLAVE = "jcomponentes-carrito";
+var CLAVE = "ggaming-carrito";
 var MAX_CANTIDAD = 99;      // límites: evitan mensajes gigantes o absurdos
 var MAX_ITEMS = 50;
 
