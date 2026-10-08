@@ -58,10 +58,12 @@ public class GeminiAsistente implements AsistenteIa {
                 Tu tarea:
                 1. categoria: exactamente una de [%s].
                 2. marca y modelo exactos.
-                3. specs: 3 a 6 especificaciones técnicas clave y cortas (ej: "12 GB GDDR6", "TDP 170 W").
-                4. descripcion: 2 a 4 oraciones para la publicación, en español rioplatense, \
-                con datos técnicos reales y para qué sirve (ej: "ideal para jugar en 1080p"). \
-                NO inventes estado, uso, garantía, caja ni accesorios: eso lo completa el dueño.
+                3. specs: 3 a 6 especificaciones técnicas clave y cortas (ej: "12 GB GDDR6", "TDP 170 W"), \
+                sin marca ni nombre de modelo.
+                4. descripcion: 1 o 2 oraciones SIMPLES en español rioplatense que expliquen qué es el \
+                componente y para qué sirve (ej: "Placa de video para PC de escritorio, ideal para jugar en 1080p."). \
+                NO nombres marca, fabricante ni modelo. NO inventes estado, uso, garantía, caja ni accesorios: \
+                eso lo completa el dueño.
                 5. precio en pesos argentinos (ARS), números enteros sin puntos ni símbolos:
                    - Si el historial tiene ventas del MISMO modelo, son la referencia principal. \
                 Si son de hace meses, ajustalas por la inflación de Argentina y decilo.
@@ -77,12 +79,13 @@ public class GeminiAsistente implements AsistenteIa {
                 """.formatted(LocalDate.now(), categorias,
                 config.busquedaWeb()
                         ? "- Buscá en Google el precio actual de ese modelo USADO en Argentina (MercadoLibre, etc.) para validar."
-                        : "- No tenés acceso a internet: basate en el historial y en tu conocimiento.");
+                        : "- No tenés acceso a internet: basate en el historial y en tu conocimiento "
+                          + "de precios de hardware usado en Argentina.");
 
         String pedido = "Producto: " + nombreProducto + "\n\nHistorial propio (JSON):\n" + historialComoJson(historial);
 
         GeminiCliente.Respuesta r = cliente.generar(sistema, List.of(mensaje("user", pedido)), true, config.busquedaWeb());
-        return limpiar(leerJson(r.texto())).conFuentes(r.fuentes());
+        return limpiar(leerJson(r.texto())).conOrigen(r.fuentes(), r.modelo());
     }
 
     private String historialComoJson(List<Coincidencia> historial) {
@@ -128,7 +131,7 @@ public class GeminiAsistente implements AsistenteIa {
         return new SugerenciaIa(categoria, cortar(s.marca(), 60), cortar(s.modelo(), 80),
                 cortar(s.descripcion(), 1500), specs,
                 positivo(s.precioRecomendado()), positivo(s.precioMin()), positivo(s.precioMax()),
-                cortar(s.explicacion(), 800), List.of());
+                cortar(s.explicacion(), 800), List.of(), null);
     }
 
     // ===================================================== preguntas del admin

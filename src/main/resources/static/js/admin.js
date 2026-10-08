@@ -64,6 +64,24 @@ function usarEn(selector, valor) {
   setTimeout(function () { campo.classList.remove("campo-ia"); }, 1200);
 }
 
+// Completa un campo SOLO si está vacío o si lo había completado esto mismo antes
+// (nunca pisa lo que escribió el usuario). Devuelve true si lo completó.
+function autollenar(selector, valor) {
+  var campo = document.querySelector(selector);
+  if (!campo || !valor) return false;
+  var actual = campo.value.trim();
+  if (actual && actual !== campo.dataset.autollenado) return false;
+  usarEn(selector, valor);
+  campo.dataset.autollenado = campo.value;
+  return true;
+}
+
+// "Texto.\n\n• dato 1\n• dato 2"
+function conVinetas(texto, datos) {
+  if (!datos || !datos.length) return texto;
+  return texto + "\n\n" + datos.map(function (x) { return "• " + x; }).join("\n");
+}
+
 function botonUsar(texto, accion) {
   var b = crear("button", "btn-chico btn-usar", texto);
   b.type = "button";
@@ -144,12 +162,32 @@ if (panelIa) {
     resultado.appendChild(hist);
 
     // ---- 2. Sugerencia de la IA ----
+    var selectCat = document.querySelector("#categoria");
+    var esCategoria = function (c) { return c && selectCat.querySelector('option[value="' + c + '"]'); };
+    var local = s.local;
+    var descLocal = conVinetas(local.descripcion, local.datos);
+
     if (s.iaError) {
       resultado.appendChild(crear("p", "aviso-error", "IA: " + s.iaError));
-    } else if (s.ia) {
+    }
+    if (!s.ia) {
+      // Sin IA (apagada o sin cuota): ficha básica armada por reglas a partir del nombre.
+      var basica = crear("section", "ia-bloque");
+      basica.appendChild(crear("h3", "ia-titulo", "Ficha básica (sin IA)"));
+      var opcionLocal = esCategoria(local.categoria);
+      if (opcionLocal) {
+        var filaLocal = crear("p", "ia-fila", "Categoría: " + opcionLocal.textContent + " ");
+        filaLocal.appendChild(botonUsar("Usar", function () { usarEn("#categoria", local.categoria); }));
+        basica.appendChild(filaLocal);
+      }
+      basica.appendChild(crear("p", "ia-descripcion", descLocal));
+      basica.appendChild(botonUsar("Usar descripción", function () { usarEn("#descripcion", descLocal); }));
+      resultado.appendChild(basica);
+    } else {
       var ia = s.ia;
       var bloque = crear("section", "ia-bloque");
-      bloque.appendChild(crear("h3", "ia-titulo", "Sugerencia de la IA"));
+      var origen = (ia.modeloIa ? " · " + ia.modeloIa : "") + (s.desdeCache ? " (guardada, no gastó consulta)" : "");
+      bloque.appendChild(crear("h3", "ia-titulo", "Sugerencia de la IA" + origen));
 
       // Precio
       if (ia.precioRecomendado) {
@@ -164,8 +202,7 @@ if (panelIa) {
       if (ia.explicacion) bloque.appendChild(crear("p", "ia-explicacion", ia.explicacion));
 
       // Categoría
-      var selectCat = document.querySelector("#categoria");
-      var opcion = ia.categoria && selectCat.querySelector('option[value="' + ia.categoria + '"]');
+      var opcion = esCategoria(ia.categoria);
       if (opcion) {
         var fila = crear("p", "ia-fila", "Categoría: " + opcion.textContent + " ");
         fila.appendChild(botonUsar("Usar", function () { usarEn("#categoria", ia.categoria); }));
@@ -186,9 +223,7 @@ if (panelIa) {
       if (ia.descripcion) {
         bloque.appendChild(crear("p", "ia-descripcion", ia.descripcion));
         bloque.appendChild(botonUsar("Usar descripción", function () {
-          var texto = ia.descripcion;
-          if (ia.specs && ia.specs.length) texto += "\n\n" + ia.specs.map(function (x) { return "• " + x; }).join("\n");
-          usarEn("#descripcion", texto);
+          usarEn("#descripcion", conVinetas(ia.descripcion, ia.specs));
         }));
       }
 
@@ -213,6 +248,19 @@ if (panelIa) {
       }));
       bloque.appendChild(crear("small", "aviso", "Revisá siempre los datos: la IA puede equivocarse."));
       resultado.appendChild(bloque);
+    }
+
+    // ---- 3. Autocompletar categoría y descripción (si están vacías) ----
+    // Prioridad: lo de la IA; si no hay IA, la ficha básica.
+    var categoria = (s.ia && esCategoria(s.ia.categoria)) ? s.ia.categoria : local.categoria;
+    var descripcion = (s.ia && s.ia.descripcion) ? conVinetas(s.ia.descripcion, s.ia.specs) : descLocal;
+    var completados = [];
+    if (autollenar("#categoria", categoria)) completados.push("categoría");
+    if (autollenar("#descripcion", descripcion)) completados.push("descripción");
+    if (completados.length) {
+      var aviso = crear("p", "aviso-ok", "✔ Completé " + completados.join(" y ") +
+        (s.ia ? " con la IA." : " con la ficha básica.") + " Podés editarlas antes de guardar.");
+      resultado.insertBefore(aviso, resultado.firstChild);
     }
     resultado.hidden = false;
   }
