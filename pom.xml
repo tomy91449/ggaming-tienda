@@ -19,7 +19,7 @@
     <description>Venta de hardware de PC con pedido por WhatsApp</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>25</java.version>
         <!--
           Parches de seguridad más nuevos que los que trae Spring Boot 3.5.16
           (revisado contra la base de vulnerabilidades OSV.dev el 2026-10-06).
