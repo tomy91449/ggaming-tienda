@@ -104,13 +104,11 @@
                 Total ref.: <strong>$<span data-carrito-total>0</span></strong>
             </p>
 
-            <label class="oferta" for="oferta">¿Cuánto te gustaría pagar?</label>
-            <!-- inputmode="numeric" abre el teclado de números en el celular -->
-            <input id="oferta" class="oferta-input" type="text" inputmode="numeric"
-                   maxlength="10" placeholder="Ej: 350000" autocomplete="off"
-                   aria-describedby="oferta-ayuda oferta-error" data-oferta>
-            <small id="oferta-error" class="error" data-oferta-error hidden>Ingresá solo números.</small>
-            <small id="oferta-ayuda" class="aviso">Por cantidad se negocia.</small>
+            <!-- Mascota de GGaming: aparece cuando hay productos en el carrito -->
+            <div class="mascota" data-mascota-carrito hidden>
+                <img class="mascota-img" th:src="@{/img/mascota.jpg}" alt="" width="72" height="72">
+                <p class="mascota-globo">¡Llevando más productos pagás menos! 😊</p>
+            </div>
 
             <button type="button" class="btn-neon btn-cian" data-enviar>
                 Cargar y enviar por WhatsApp
@@ -121,6 +119,31 @@
         </div>
     </aside>
 </div>
+
+<!-- Dónde estamos: dirección, horario y mapa de Google -->
+<section class="ubicacion hud" id="ubicacion" aria-labelledby="titulo-ubicacion">
+    <div class="ubicacion-info">
+        <h2 class="panel-titulo" id="titulo-ubicacion">Dónde estamos</h2>
+        <p class="ubicacion-direccion">
+            <svg th:replace="~{fragments/iconos :: ubicacion}"></svg>
+            <span th:text="${tienda.direccion()}">Blvr. Chacabuco 651, X5000IIG Córdoba</span>
+        </p>
+        <ul class="ubicacion-datos">
+            <li><strong>Horario:</strong> todos los días de
+                <span th:text="${tienda.apertura()} + ' a ' + ${tienda.cierre()}">08:00 a 21:00</span> hs</li>
+            <li><strong>Pagos:</strong> <span th:text="${tienda.pagos()}">Transferencia o efectivo</span></li>
+            <li><strong>Probalo antes de comprar:</strong> venís, lo probás y te lo llevás.</li>
+            <li><strong>Envíos:</strong> por Uber Envíos, a cargo del comprador.</li>
+        </ul>
+        <a class="btn-neon btn-cian ubicacion-boton" th:href="${tienda.urlComoLlegar()}"
+           target="_blank" rel="noopener noreferrer">Cómo llegar</a>
+    </div>
+    <div class="ubicacion-mapa">
+        <!-- loading="lazy": el mapa se carga recién cuando el cliente llega a esta parte -->
+        <iframe th:src="${tienda.urlMapaIncrustado()}" title="Mapa con la ubicación de GGaming"
+                loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+    </div>
+</section>
 </div>
 
 <!-- Celular/tablet: botón flotante para abrir el carrito y velo oscuro detrás -->
@@ -129,6 +152,12 @@
     <span>Carrito (<span data-carrito-cantidad>0</span>)</span>
 </button>
 <div class="velo" data-velo hidden></div>
+
+<!-- Aviso de la mascota que aparece unos segundos al agregar un producto -->
+<div class="mascota mascota-aviso" data-mascota-aviso role="status" aria-live="polite" hidden>
+    <img class="mascota-img" th:src="@{/img/mascota.jpg}" alt="" width="64" height="64">
+    <p class="mascota-globo">¡Llevando más productos pagás menos! 😊</p>
+</div>
 
 <script th:src="@{/js/app.js}"></script>
 </body>

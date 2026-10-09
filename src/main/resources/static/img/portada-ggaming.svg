@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1640 624" width="1640" height="624" role="img" aria-label="GGaming - Hardware de PC">
+  <!-- Portada GGaming: misma paleta que el logo y la tienda (blanco, azul acero metálico, azul profundo, cian). -->
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset=".35" stop-color="#e3ebfa"/>
+      <stop offset=".72" stop-color="#c3d1ea"/>
+      <stop offset="1" stop-color="#8ea4d2"/>
+    </linearGradient>
+    <!-- Reflejos diagonales del metal -->
+    <linearGradient id="reflejo" x1="0" y1="0" x2="1" y2=".6">
+      <stop offset=".22" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset=".34" stop-color="#ffffff" stop-opacity=".7"/>
+      <stop offset=".42" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset=".56" stop-color="#ffffff" stop-opacity=".3"/>
+      <stop offset=".64" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Letras: azul brillante arriba → azul profundo abajo -->
+    <linearGradient id="azul" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a7bea"/>
+      <stop offset=".55" stop-color="#1f4fb8"/>
+      <stop offset="1" stop-color="#13205a"/>
+    </linearGradient>
+    <linearGradient id="barra" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1f4fb8"/>
+      <stop offset="1" stop-color="#18c8f0"/>
+    </linearGradient>
+    <filter id="halo" x="-20%" y="-40%" width="140%" height="180%">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+    <filter id="haloSuave" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="d"/>
+      <feMerge><feMergeNode in="d"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fondo metálico -->
+  <rect width="1640" height="624" fill="url(#metal)"/>
+  <rect width="1640" height="624" fill="url(#reflejo)"/>
+
+  <!-- Circuitos tenues a los costados (en el celular se recortan, por eso no llevan nada importante) -->
+  <g fill="none" stroke="#7088c2" stroke-opacity=".35" stroke-width="3">
+    <path d="M0 150 H120 L160 190 H250 L275 165 H290"/>
+    <path d="M0 470 H90 L130 430 H250"/>
+    <path d="M60 624 V560 L100 520 H210"/>
+    <path d="M1640 140 H1520 L1480 180 H1400"/>
+    <path d="M1640 470 H1550 L1510 510 H1430 L1405 485 H1385"/>
+    <path d="M1580 0 V60 L1540 100 H1440"/>
+    <circle cx="290" cy="165" r="6"/><circle cx="250" cy="430" r="6"/><circle cx="210" cy="520" r="6"/>
+    <circle cx="1400" cy="180" r="6"/><circle cx="1385" cy="485" r="6"/><circle cx="1440" cy="100" r="6"/>
+  </g>
+
+  <!-- Marcas de esquina HUD alrededor de la zona central -->
+  <g fill="none" stroke="#18c8f0" stroke-width="7" stroke-linecap="square" filter="url(#haloSuave)">
+    <path d="M330 150 V100 H400"/>
+    <path d="M1240 100 H1310 V150"/>
+    <path d="M1310 474 V524 H1240"/>
+    <path d="M400 524 H330 V474"/>
+  </g>
+
+  <!-- "GGaming" con el mismo trazo de las G del logo (esquinas cortadas en diagonal).
+       Cada letra está dibujada a mano: G G a m i n g -->
+  <g transform="translate(400 190) scale(1.16)" fill="none" stroke-width="20"
+     stroke-linejoin="miter" stroke-linecap="square">
+    <!-- 1) halo cian detrás -->
+    <g stroke="#5ee7ff" stroke-opacity=".85" filter="url(#halo)">
+      <path id="letras" d="
+        M96 0 H24 L0 24 V96 L24 120 H96 V62 H54
+        M224 0 H152 L128 24 V96 L152 120 H224 V62 H182
+        M256 36 H312 L328 52 V120 M328 72 H272 L256 88 V104 L272 120 H328
+        M360 120 V36 H448 L464 52 V120 M412 36 V120
+        M496 36 V120 M496 -12 V-4
+        M528 120 V36 H584 L600 52 V120
+        M704 120 H648 L632 104 V52 L648 36 H704 V144 L688 160 H632"/>
+    </g>
+    <!-- 2) letras en azul metálico -->
+    <use href="#letras" stroke="url(#azul)"/>
+  </g>
+
+  <!-- Barra "de carga" -->
+  <g filter="url(#haloSuave)">
+    <rect x="700" y="420" width="240" height="10" rx="5" fill="#13205a" opacity=".16"/>
+    <rect x="700" y="420" width="156" height="10" rx="5" fill="url(#barra)"/>
+  </g>
+
+  <!-- Bajada: la promesa de calidad (mayúsculas, negrita y espaciado amplio, estilo HUD) -->
+  <text x="820" y="482" text-anchor="middle" fill="#34477f"
+        font-family="Rajdhani, 'Segoe UI', sans-serif" font-weight="700" font-size="28" letter-spacing="5">USADOS COMO NUEVOS. TESTEADOS Y GARANTIZADOS.</text>
+
+  <!-- Filo metálico inferior -->
+  <rect y="618" width="1640" height="6" fill="#18c8f0" opacity=".55"/>
+</svg>

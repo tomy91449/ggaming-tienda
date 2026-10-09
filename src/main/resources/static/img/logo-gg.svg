@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="GGaming">
+  <!-- Paleta de la tienda: blanco, azul acero metálico, azul profundo y cian. Sin violeta. -->
+  <defs>
+    <!-- Fondo metálico: de blanco a azul acero (como el encabezado de la página) -->
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset=".35" stop-color="#e3ebfa"/>
+      <stop offset=".7" stop-color="#c3d1ea"/>
+      <stop offset="1" stop-color="#8ea4d2"/>
+    </linearGradient>
+    <!-- Reflejo diagonal: lo que hace que se lea "metal" -->
+    <linearGradient id="reflejo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset=".28" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset=".42" stop-color="#ffffff" stop-opacity=".75"/>
+      <stop offset=".5" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset=".62" stop-color="#ffffff" stop-opacity=".35"/>
+      <stop offset=".7" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Letras: azul brillante arriba → azul profundo abajo (volumen metálico) -->
+    <linearGradient id="azul" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a7bea"/>
+      <stop offset=".5" stop-color="#1f4fb8"/>
+      <stop offset="1" stop-color="#13205a"/>
+    </linearGradient>
+    <!-- Barra: azul → cian -->
+    <linearGradient id="barra" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1f4fb8"/>
+      <stop offset="1" stop-color="#18c8f0"/>
+    </linearGradient>
+    <!-- Resplandor cian (como el text-shadow del logo de la página) -->
+    <filter id="halo" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+    <filter id="haloSuave" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="d"/>
+      <feMerge><feMergeNode in="d"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="forma"><rect width="512" height="512" rx="116"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#forma)">
+    <rect width="512" height="512" fill="url(#metal)"/>
+    <rect width="512" height="512" fill="url(#reflejo)"/>
+
+    <!-- Circuitos tenues, como el fondo de la tienda -->
+    <g fill="none" stroke="#7088c2" stroke-opacity=".35" stroke-width="3">
+      <path d="M0 400 H90 L120 430 H200"/>
+      <path d="M512 112 H420 L392 84 H330"/>
+      <circle cx="200" cy="430" r="5"/>
+      <circle cx="330" cy="84" r="5"/>
+    </g>
+
+    <!-- Marcas de esquina estilo HUD -->
+    <g fill="none" stroke="#18c8f0" stroke-width="7" stroke-linecap="square" filter="url(#haloSuave)">
+      <path d="M70 128 V70 H128"/>
+      <path d="M384 70 H442 V128"/>
+      <path d="M442 384 V442 H384"/>
+      <path d="M128 442 H70 V384"/>
+    </g>
+
+    <!-- GG: dos "G" con esquinas cortadas en diagonal (como los paneles HUD) -->
+    <g transform="translate(138 181) scale(1.05)" fill="none" stroke-width="20"
+       stroke-linejoin="miter" stroke-linecap="square">
+      <!-- 1) halo cian difuso detrás -->
+      <path stroke="#5ee7ff" stroke-opacity=".9" filter="url(#halo)"
+            d="M96 0 H24 L0 24 V96 L24 120 H96 V62 H54 M224 0 H152 L128 24 V96 L152 120 H224 V62 H182"/>
+      <!-- 2) letras en azul metálico -->
+      <path stroke="url(#azul)"
+            d="M96 0 H24 L0 24 V96 L24 120 H96 V62 H54 M224 0 H152 L128 24 V96 L152 120 H224 V62 H182"/>
+      <!-- 3) filo de luz blanco arriba (el brillo del metal) -->
+      <path stroke="#ffffff" stroke-opacity=".55" stroke-width="3"
+            d="M94 -7 H27 L-7 27 M222 -7 H155 L121 27"/>
+    </g>
+
+    <!-- Barra "de carga" minimalista -->
+    <g filter="url(#haloSuave)">
+      <rect x="196" y="352" width="120" height="8" rx="4" fill="#13205a" opacity=".18"/>
+      <rect x="196" y="352" width="78" height="8" rx="4" fill="url(#barra)"/>
+    </g>
+
+    <!-- Borde: filo metálico -->
+    <rect x="3" y="3" width="506" height="506" rx="113" fill="none" stroke="#ffffff" stroke-opacity=".9" stroke-width="4"/>
+    <rect x="7" y="7" width="498" height="498" rx="109" fill="none" stroke="#5ee7ff" stroke-opacity=".5" stroke-width="2"/>
+  </g>
+</svg>

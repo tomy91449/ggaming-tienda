@@ -36,6 +36,9 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain seguridad(HttpSecurity http, AppProperties config, IntentosLogin intentos) throws Exception {
         http
+            // El webhook de WhatsApp lo llama Meta (no un navegador): no lleva token CSRF.
+            // Su seguridad es la firma HMAC que valida WhatsappWebhookController.
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/webhook/**"))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(LOGIN).permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")

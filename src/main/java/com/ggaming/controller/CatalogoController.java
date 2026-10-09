@@ -1,5 +1,6 @@
 package com.ggaming.controller;
 
+import com.ggaming.bot.TiendaProperties;
 import com.ggaming.config.AppProperties;
 import com.ggaming.model.Categoria;
 import com.ggaming.service.CatalogoService;
@@ -18,10 +19,12 @@ public class CatalogoController {
 
     private final CatalogoService catalogo;
     private final AppProperties config;
+    private final TiendaProperties tienda;
 
-    public CatalogoController(CatalogoService catalogo, AppProperties config) {
+    public CatalogoController(CatalogoService catalogo, AppProperties config, TiendaProperties tienda) {
         this.catalogo = catalogo;
         this.config = config;
+        this.tienda = tienda;
     }
 
     /** Página pública: GET /?q=rtx&categoria=PLACA_VIDEO */
@@ -36,6 +39,8 @@ public class CatalogoController {
         model.addAttribute("categoriaActual", categoria);
         // El número sale de la configuración (variable WHATSAPP_NUMBER), no del HTML.
         model.addAttribute("whatsapp", config.whatsappNumber());
+        // Dirección, horario y mapa para la sección "Dónde estamos".
+        model.addAttribute("tienda", tienda);
         return "catalogo"; // -> templates/catalogo.html
     }
 }

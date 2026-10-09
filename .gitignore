@@ -10,3 +10,7 @@ uploads/
 
 # Informes de Strix (pueden contener detalles de ataques)
 strix_runs/
+
+# Producción: datos y backups del servidor (nunca al repo)
+datos/
+backups/

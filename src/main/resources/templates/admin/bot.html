@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Bot WhatsApp')}"></head>
+<body>
+<div class="marco">
+<header th:replace="~{fragments/admin :: encabezado}"></header>
+
+<main class="vitrina hud admin bot">
+    <div class="vitrina-cabecera">
+        <h1 class="panel-titulo">Bot de WhatsApp</h1>
+        <span class="pastilla" th:classappend="${config.configurado()} ? 'pastilla-igual' : 'pastilla-vendido'"
+              th:text="${config.configurado()} ? 'Conectado a WhatsApp' : 'Sin conectar (solo simulador)'">Estado</span>
+    </div>
+
+    <th:block th:replace="~{fragments/admin :: avisos}"></th:block>
+
+    <!-- ===== Estado de la configuración ===== -->
+    <details class="bot-config" th:open="${!config.configurado()}">
+        <summary>Configuración de WhatsApp (Meta)</summary>
+        <ul class="bot-checklist">
+            <li th:each="item : ${checklist}" th:classappend="${item.value} ? 'ok'"
+                th:text="${item.key}">VARIABLE</li>
+        </ul>
+        <p class="aviso">URL del webhook para cargar en Meta: <code th:text="${urlWebhook}">https://.../webhook/whatsapp</code></p>
+        <p class="aviso">Los avisos llegan a: <strong th:text="'+' + ${config.numeroDueno()}">+549...</strong></p>
+    </details>
+
+    <!-- ===== Simulador ===== -->
+    <section class="bot-seccion" id="simulador">
+        <h2 class="panel-titulo">Simulador</h2>
+        <p class="aviso">Escribile al bot como si fueras un cliente. Usa el stock y la IA reales, pero
+            <strong>no envía nada por WhatsApp</strong>: los avisos que te llegarían se muestran acá.</p>
+
+        <ol class="chat-mensajes">
+            <li th:each="l : ${conversacionSim}" class="chat-mensaje"
+                th:classappend="${l.rol() == 'CLIENTE'} ? 'chat-usuario' : (${l.rol() == 'BOT'} ? 'chat-asistente' : 'chat-aviso')">
+                <span class="chat-autor"
+                      th:text="${l.rol() == 'CLIENTE'} ? 'Cliente' : (${l.rol() == 'BOT'} ? 'Bot' : 'Aviso a tu WhatsApp')">Autor</span>
+                <p class="chat-texto" th:text="${l.texto()}">Texto</p>
+            </li>
+        </ol>
+        <p th:if="${#lists.isEmpty(conversacionSim)}" class="vacio">Todavía no hay mensajes. Probá con "Hola, ¿tenés placas de video?"</p>
+
+        <form method="post" th:action="@{/admin/bot/simular}" class="chat-form bot-sim-form"
+              data-guardar data-espera="El bot está pensando...">
+            <input type="hidden" name="numero" th:value="${numeroSim}">
+            <label for="mensaje" class="sr-only">Mensaje del cliente</label>
+            <textarea id="mensaje" name="mensaje" rows="2" maxlength="1000" required
+                      placeholder="Escribí como cliente... (Enter para enviar)" data-enter-envia autofocus></textarea>
+            <button type="submit" class="btn-neon btn-cian">Enviar</button>
+        </form>
+        <form method="post" th:action="@{/admin/bot/simular/reiniciar}" class="bot-reiniciar">
+            <input type="hidden" name="numero" th:value="${numeroSim}">
+            <button type="submit" class="btn-chico">Empezar conversación de prueba nueva</button>
+        </form>
+    </section>
+
+    <!-- ===== Turnos ===== -->
+    <section class="bot-seccion">
+        <h2 class="panel-titulo">Próximos turnos</h2>
+        <p th:if="${#lists.isEmpty(turnos)}" class="vacio">No hay turnos agendados.</p>
+        <ul class="ventas-lista" th:unless="${#lists.isEmpty(turnos)}">
+            <li th:each="t : ${turnos}" class="venta-item">
+                <span class="venta-fecha" th:text="${#temporals.format(t.dia(), 'EEEE dd/MM')} + ' · ' + ${t.hora()} + ' hs'">día</span>
+                <span class="venta-nombre">
+                    <strong th:text="${t.telefono().startsWith('sim:')} ? '+' + ${t.telefono().substring(4)} + ' (prueba)' : '+' + ${t.telefono()}">+549</strong>
+                    <small th:text="${t.productos()}">productos</small>
+                </span>
+            </li>
+        </ul>
+    </section>
+
+    <!-- ===== Conversaciones reales ===== -->
+    <section class="bot-seccion">
+        <h2 class="panel-titulo">Conversaciones</h2>
+        <p th:if="${#lists.isEmpty(conversaciones)}" class="vacio">Todavía no escribió ningún cliente.</p>
+        <ul class="admin-lista">
+            <li th:each="c : ${conversaciones}" class="admin-item bot-conversacion">
+                <div class="admin-datos">
+                    <strong class="admin-nombre" th:text="'+' + ${c.telefono()}">+549</strong>
+                    <span class="admin-detalle" th:text="${c.ultimoTexto()}">último mensaje</span>
+                    <span class="pastilla" th:classappend="${c.modo() == 'HUMANO'} ? 'pastilla-vendido'"
+                          th:text="${c.modo() == 'HUMANO'} ? 'Lo atendés vos' : 'Atiende el bot'">modo</span>
+                </div>
+                <div class="admin-acciones">
+                    <form th:if="${c.modo() == 'HUMANO'}" method="post"
+                          th:action="@{/admin/bot/{t}/reactivar(t=${c.telefono()})}">
+                        <button type="submit" class="btn-chico">Reactivar bot</button>
+                    </form>
+                </div>
+            </li>
+        </ul>
+    </section>
+</main>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

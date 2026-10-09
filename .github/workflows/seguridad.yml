@@ -1,6 +1,6 @@
-# Revisión automática en GitHub Actions: tests + pentest con Strix.
+# CI en GitHub Actions: tests, imagen Docker y pentest con Strix.
 #
-# Se ejecuta en cada Pull Request y también a mano (pestaña Actions → "Seguridad" → Run workflow).
+# Tests e imagen: en cada push a main y en cada Pull Request. Strix: en PRs o a mano (Actions → "Seguridad" → Run workflow).
 #
 # Para que Strix funcione, cargá dos "secrets" en GitHub
 # (repo → Settings → Secrets and variables → Actions → New repository secret):
@@ -11,6 +11,8 @@
 name: Seguridad
 
 on:
+  push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -33,10 +35,33 @@ jobs:
           chmod +x mvnw
           ./mvnw -B verify
 
+  imagen:
+    name: Imagen Docker (build + arranque)
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir la imagen
+        run: docker build -t ggaming:ci .
+      - name: Arrancarla como en producción (solo lectura, sin privilegios) y probarla
+        run: |
+          mkdir -p datos/uploads && sudo chown -R 10001:10001 datos
+          docker run -d --name ggaming -p 8080:8080 \
+            --read-only --tmpfs /tmp:exec,mode=1777,size=256m \
+            --cap-drop ALL --security-opt no-new-privileges:true \
+            -v "$PWD/datos:/data" ggaming:ci
+          for i in $(seq 1 60); do curl -sf http://localhost:8080/ >/dev/null && break; sleep 2; done
+          curl -sf http://localhost:8080/ | grep -q "GGaming"
+          echo "La app respondió dentro del contenedor ✔"
+      - name: Logs si falló
+        if: failure()
+        run: docker logs ggaming || true
+
   strix:
     name: Pentest con Strix
     runs-on: ubuntu-latest   # los runners de GitHub ya traen Docker
     needs: tests
+    if: github.event_name != 'push'   # en cada push solo tests e imagen; Strix en PRs o a mano
     steps:
       - uses: actions/checkout@v4
         with:

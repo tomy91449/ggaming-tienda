@@ -458,16 +458,57 @@ a { color: inherit; }
   text-align: right;
   font-size: 1.35rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
 }
-.oferta { font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
-.oferta-input {
-  width: 100%; min-height: 48px; padding: 0 12px;
-  font-size: 1.2rem; font-weight: 700;
+/* ---------- Mascota de GGaming ---------- */
+.mascota { display: flex; align-items: center; gap: 10px; }
+.mascota[hidden] { display: none; }
+.mascota-img {
+  flex: none;
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #fff;
+  border: 3px solid var(--cian);
+  box-shadow: 0 0 10px rgba(94, 231, 255, .8);
+}
+/* Globo de diálogo con la "colita" apuntando a la mascota */
+.mascota-globo {
+  position: relative;
+  margin: 0;
+  padding: 10px 14px;
+  font-weight: 700; font-size: 1.05rem; line-height: 1.25;
   color: var(--tinta);
   background: #fff;
-  border: 2px solid #8fb0e8;
-  border-radius: 6px;
+  border: 2px solid var(--cian);
+  border-radius: 14px;
+  box-shadow: 0 0 10px rgba(94, 231, 255, .45);
 }
-.oferta-input:focus { outline: none; border-color: var(--magenta); box-shadow: 0 0 10px rgba(255, 79, 216, .5); }
+.mascota-globo::before {
+  content: "";
+  position: absolute; left: -9px; top: 50%;
+  width: 14px; height: 14px;
+  background: #fff;
+  border-left: 2px solid var(--cian); border-bottom: 2px solid var(--cian);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+/* Aviso flotante al agregar un producto (arriba del botón del carrito) */
+.mascota-aviso {
+  position: fixed; right: 16px; bottom: 84px; z-index: 35;
+  max-width: min(340px, calc(100% - 32px));
+  padding: 8px 10px;
+  background: linear-gradient(165deg, var(--card-1), var(--card-2));
+  border: 2px solid var(--cian);
+  border-radius: 16px;
+  box-shadow: 0 0 12px var(--cian), 0 0 24px rgba(255, 79, 216, .45);
+  animation: mascota-entra .3s ease-out;
+}
+.mascota-aviso .mascota-img { width: 64px; height: 64px; }
+.mascota-aviso.saliendo { opacity: 0; transform: translateY(10px); transition: opacity .25s, transform .25s; }
+@keyframes mascota-entra {
+  from { opacity: 0; transform: translateY(16px) scale(.95); }
+  to   { opacity: 1; transform: none; }
+}
+
 .error { color: var(--error); font-weight: 700; }
 .aviso { color: var(--tinta-suave); font-weight: 600; }
 
@@ -515,6 +556,29 @@ a { color: inherit; }
   border-radius: 999px;
   box-shadow: 0 0 8px var(--cian), 0 0 18px rgba(255, 79, 216, .5);
 }
+
+/* ---------- Dónde estamos (mapa) ---------- */
+.ubicacion {
+  --c: 16px;
+  display: grid;
+  gap: 16px;
+  padding: 18px 16px;
+}
+.ubicacion-info { display: grid; gap: 10px; align-content: start; }
+.ubicacion-direccion { display: flex; align-items: center; gap: 8px; font-size: 1.15rem; font-weight: 700; }
+.ubicacion-direccion .icono { color: var(--cian-fuerte); filter: drop-shadow(0 0 4px var(--cian)); }
+.ubicacion-datos { margin: 0; padding-left: 20px; display: grid; gap: 4px; color: var(--tinta-suave); }
+.ubicacion-datos strong { color: var(--tinta); }
+.ubicacion-boton { justify-self: start; min-width: 200px; }
+.ubicacion-mapa {
+  overflow: hidden;
+  border: 2px solid var(--cian);
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(94, 231, 255, .45);
+  background: #e3ebfa;
+  aspect-ratio: 4 / 3;     /* reserva el espacio: la página no "salta" al cargar el mapa */
+}
+.ubicacion-mapa iframe { display: block; width: 100%; height: 100%; border: 0; }
 
 /* Evita que la página de fondo se desplace con el carrito abierto */
 body.sin-scroll { overflow: hidden; }
@@ -751,6 +815,26 @@ body.sin-scroll { overflow: hidden; }
 }
 .chat-form textarea:focus { outline: none; border-color: var(--magenta); }
 
+/* ---------- Bot de WhatsApp ---------- */
+.bot { display: grid; gap: 18px; }
+.bot-seccion { display: grid; gap: 10px; padding-top: 14px; border-top: 1px solid rgba(19, 32, 90, .25); }
+.bot-seccion .panel-titulo { font-size: 1.3rem; }
+.bot-config summary { cursor: pointer; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; min-height: 44px; display: flex; align-items: center; }
+.bot-checklist { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 4px; }
+.bot-checklist li { font-weight: 600; color: var(--tinta-suave); }
+.bot-checklist li::before { content: "✘ "; color: var(--error); }
+.bot-checklist li.ok::before { content: "✔ "; color: #14b88a; }
+.bot-config code { overflow-wrap: anywhere; font-weight: 700; color: var(--tinta); }
+.chat-aviso {
+  justify-self: center; max-width: min(720px, 100%);
+  color: #0b4a3a; background: rgba(160, 255, 220, .65);
+  border-left: 4px solid #14b88a; border-radius: 8px;
+}
+.bot-reiniciar { margin: 0; }
+.bot-sim-form { position: static; }  /* en el simulador, la caja no flota sobre los mensajes */
+.bot-conversacion .admin-detalle { overflow-wrap: anywhere; }
+.bot-conversacion { grid-template-columns: minmax(0, 1fr); grid-template-areas: "datos" "acciones"; }
+
 /* Login */
 .marco-login { min-height: 100dvh; place-items: center; }
 .login { width: min(440px, 100%); padding: 28px 22px; display: grid; gap: 14px; }
@@ -835,6 +919,7 @@ body.sin-scroll { overflow: hidden; }
     transition: none;
   }
   .btn-cerrar, .btn-flotante, .velo { display: none !important; }
+  .mascota-aviso { bottom: 24px; right: 24px; } /* sin botón flotante, baja al borde */
 }
 
 /* Respeta a quien desactiva animaciones en su sistema */
@@ -843,4 +928,15 @@ body.sin-scroll { overflow: hidden; }
     transition-duration: .01ms !important;
     animation-duration: .01ms !important;
   }
+}
+
+/* Bot: en escritorio, cada conversación en una fila (sin miniatura) */
+@media (min-width: 1000px) {
+  .bot-conversacion { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "datos acciones"; }
+}
+
+/* Dónde estamos: en pantallas anchas, datos a la izquierda y mapa a la derecha */
+@media (min-width: 900px) {
+  .ubicacion { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); padding: 22px; align-items: stretch; }
+  .ubicacion-mapa { aspect-ratio: auto; min-height: 320px; }
 }

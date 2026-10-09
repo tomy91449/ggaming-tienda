@@ -1,0 +1,17 @@
+# Caddy: servidor web delante de la app.
+# - Saca y renueva solo el certificado HTTPS (Let's Encrypt, gratis).
+# - Redirige http:// a https:// automáticamente.
+# - Le pasa a la app la IP real del cliente (X-Forwarded-For), que usa el límite por IP.
+{$DOMINIO} {
+	encode zstd gzip
+
+	# Fotos de hasta 15 MB cada una (el formulario permite varias).
+	request_body {
+		max_size 90MB
+	}
+
+	# No anunciar qué servidor usamos.
+	header -Server
+
+	reverse_proxy app:8080
+}

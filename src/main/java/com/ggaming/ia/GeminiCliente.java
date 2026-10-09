@@ -1,6 +1,8 @@
 package com.ggaming.ia;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatusCode;
@@ -34,16 +36,18 @@ public class GeminiCliente {
 
     private final RestClient http;
     private final IaProperties config;
+    private final ObjectMapper json;
 
     /** @param modelo qué modelo respondió (el principal o el de respaldo) */
     public record Respuesta(String texto, List<SugerenciaIa.Fuente> fuentes, String modelo) {}
 
-    public GeminiCliente(RestClient.Builder builder, IaProperties config) {
+    public GeminiCliente(RestClient.Builder builder, IaProperties config, ObjectMapper json) {
         var fabrica = new SimpleClientHttpRequestFactory();
         fabrica.setConnectTimeout(Duration.ofSeconds(10));
         fabrica.setReadTimeout(Duration.ofSeconds(60)); // con búsqueda en Google puede tardar
         this.http = builder.baseUrl(config.urlBase()).requestFactory(fabrica).build();
         this.config = config;
+        this.json = json;
     }
 
     /**
@@ -62,7 +66,7 @@ public class GeminiCliente {
                 return generarCon(modelo, sistema, contenidos, json, buscar);
             } catch (IaException e) {
                 if (!e.reintentable()) throw e;
-                log.info("Modelo {} sin cuota o saturado, pruebo con el siguiente.", modelo);
+                log.info("Modelo {} no respondió bien ({}), pruebo con el siguiente.", modelo, e.getMessage());
                 ultimo = e;
             }
         }
@@ -81,9 +85,11 @@ public class GeminiCliente {
         cuerpo.put("generationConfig", generacion);
         if (buscar) cuerpo.put("tools", List.of(Map.of("google_search", Map.of())));
 
-        JsonNode raiz;
+        String texto;
         try {
-            raiz = http.post()
+            // Leemos como texto y parseamos nosotros: cuando Google está saturado a veces declara
+            // un tipo de contenido raro (application/octet-stream) aunque mande JSON.
+            texto = http.post()
                     .uri("/models/{modelo}:generateContent", modelo)
                     .header("x-goog-api-key", config.apiKey())
                     .contentType(MediaType.APPLICATION_JSON)
@@ -98,14 +104,22 @@ public class GeminiCliente {
                         boolean reintentable = estado == 429 || estado >= 500;
                         throw new IaException(mensajePorEstado(estado, detalle, modelo), reintentable);
                     })
-                    .body(JsonNode.class);
+                    .body(String.class);
         } catch (IaException e) {
             throw e;
         } catch (ResourceAccessException e) {
-            throw new IaException("No se pudo conectar con Gemini (¿sin internet o tardó demasiado?).");
+            // Timeout o corte de conexión: puede ser momentáneo, el modelo de respaldo lo puede resolver.
+            throw new IaException("No se pudo conectar con Gemini (¿sin internet o tardó demasiado?).", true);
         } catch (RestClientException e) {
-            log.warn("Respuesta inesperada de Gemini", e);
-            throw new IaException("Gemini devolvió una respuesta inesperada.");
+            log.warn("Respuesta inesperada de Gemini: {}", e.getMessage());
+            throw new IaException("Gemini devolvió una respuesta inesperada.", true);
+        }
+        JsonNode raiz;
+        try {
+            // this.json (el parser) y no "json" (el parámetro que dice si pedir JSON)
+            raiz = texto == null || texto.isBlank() ? null : this.json.readTree(texto);
+        } catch (JsonProcessingException e) {
+            throw new IaException("Gemini devolvió una respuesta inesperada.", true);
         }
         return leer(raiz, modelo);
     }

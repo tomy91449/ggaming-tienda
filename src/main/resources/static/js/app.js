@@ -86,6 +86,8 @@ function dibujarCarrito(carrito) {
 
   document.querySelector("[data-carrito-cantidad]").textContent = unidades;
   document.querySelector("[data-carrito-vacio]").hidden = ids.length > 0;
+  // La mascota del carrito solo aparece si hay productos.
+  document.querySelector("[data-mascota-carrito]").hidden = ids.length === 0;
   document.querySelector("[data-carrito-total]").textContent = formatear(totalReferencial(carrito));
 
   lista.replaceChildren();
@@ -127,6 +129,22 @@ function dibujarCarrito(carrito) {
   });
 }
 
+// ---------- Mascota: "¡Llevando más productos pagás menos!" ----------
+
+var avisoMascota = document.querySelector("[data-mascota-aviso]");
+var temporizadorMascota = null;
+
+// Muestra el globo unos segundos. Si agregan varios seguidos, se reinicia el tiempo.
+function mostrarAvisoMascota() {
+  clearTimeout(temporizadorMascota);
+  avisoMascota.hidden = false;
+  avisoMascota.classList.remove("saliendo");
+  temporizadorMascota = setTimeout(function () {
+    avisoMascota.classList.add("saliendo");
+    temporizadorMascota = setTimeout(function () { avisoMascota.hidden = true; }, 250);
+  }, 4000);
+}
+
 // ---------- Agregar productos ----------
 
 document.querySelectorAll("[data-agregar]").forEach(function (boton) {
@@ -144,6 +162,7 @@ document.querySelectorAll("[data-agregar]").forEach(function (boton) {
       };
     }
     guardarCarrito(carrito);
+    mostrarAvisoMascota();
     // Feedback visual de 1 segundo
     boton.textContent = "✓ Agregado";
     boton.classList.add("agregado");
@@ -188,21 +207,9 @@ escritorio.addEventListener("change", function () {
   }
 });
 
-// ---------- Oferta: solo números ----------
-
-var oferta = document.querySelector("[data-oferta]");
-var errorOferta = document.querySelector("[data-oferta-error]");
-
-// Mientras escribe, borramos todo lo que no sea dígito (letras, $, puntos...).
-oferta.addEventListener("input", function () {
-  var limpio = oferta.value.replace(/\D/g, "").slice(0, 10);
-  errorOferta.hidden = limpio === oferta.value;
-  oferta.value = limpio;
-});
-
 // ---------- Enviar por WhatsApp ----------
 
-function armarMensaje(carrito, montoOferta) {
+function armarMensaje(carrito) {
   var lineas = ["¡Hola! Quiero hacer este pedido:", ""];
   Object.keys(carrito).forEach(function (id) {
     var item = carrito[id];
@@ -211,7 +218,6 @@ function armarMensaje(carrito, montoOferta) {
   });
   lineas.push("");
   lineas.push("Total referencial: $" + formatear(totalReferencial(carrito)));
-  lineas.push("Mi oferta: " + (montoOferta ? "$" + formatear(montoOferta) : "sin oferta"));
   return lineas.join("\n");
 }
 
@@ -221,17 +227,15 @@ document.querySelector("[data-enviar]").addEventListener("click", function () {
     alert("Agregá al menos un producto.");
     return;
   }
-  var montoOferta = oferta.value.replace(/\D/g, "").slice(0, 10);
   // El número viene del servidor; igual lo dejamos solo en dígitos por las dudas.
   var numero = String(panel.dataset.whatsapp || "").replace(/\D/g, "");
   // wa.me abre WhatsApp (app en el celular, WhatsApp Web en la PC) con el texto ya escrito.
-  window.location.href = "https://wa.me/" + numero + "?text=" + encodeURIComponent(armarMensaje(carrito, montoOferta));
+  window.location.href = "https://wa.me/" + numero + "?text=" + encodeURIComponent(armarMensaje(carrito));
 });
 
 document.querySelector("[data-vaciar]").addEventListener("click", function () {
   if (Object.keys(leerCarrito()).length === 0) return;
   if (confirm("¿Vaciar el carrito?")) {
-    oferta.value = "";
     guardarCarrito({});
   }
 });

@@ -1,0 +1,57 @@
+# ============================================================
+# Producción: la app (GGaming) detrás de Caddy (HTTPS automático).
+#   Internet ──443──▶ Caddy ──8080 (red interna)──▶ app
+# La app NO se expone directo a internet: solo Caddy tiene puertos abiertos.
+#
+# Uso (en el servidor):  docker compose up -d --build
+# ============================================================
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env                 # secretos: ADMIN_PASSWORD, SECRET_KEY, GEMINI_API_KEY...
+    environment:
+      COOKIE_SECURE: "true"
+      BASE_URL: "https://${DOMINIO}"
+    volumes:
+      - ./datos:/data              # base de datos + fotos (incluir en los backups)
+    expose:
+      - "8080"                     # solo visible dentro de la red de Docker
+    # Endurecimiento: sistema de archivos de solo lectura (salvo /data y /tmp),
+    # sin privilegios extra y sin capacidades de Linux.
+    read_only: true
+    tmpfs:
+      # exec: el driver de SQLite extrae ahí su librería nativa y necesita ejecutarla.
+      # 256m: las fotos subidas pasan por /tmp antes de comprimirse.
+      - /tmp:exec,mode=1777,size=256m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 1g
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"                    # solo para redirigir a HTTPS y validar el certificado
+      - "443:443"
+      - "443:443/udp"              # HTTP/3
+    environment:
+      DOMINIO: ${DOMINIO}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data           # certificados HTTPS (se renuevan solos)
+      - caddy_config:/config
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+volumes:
+  caddy_data:
+  caddy_config:

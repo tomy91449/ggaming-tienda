@@ -43,6 +43,11 @@ public class ClasificadorLocal {
     private static final Map<Categoria, Pattern> MODELOS = new LinkedHashMap<>();
 
     static {
+        // Periféricos primero: "Teclado con RGB y 3200 DPI" es teclado aunque tenga números de otros componentes.
+        PALABRAS.put(Categoria.TECLADO, p("\\b(teclado|keyboard)\\b"));
+        PALABRAS.put(Categoria.MOUSE, p("\\b(mouse|raton)\\b"));
+        PALABRAS.put(Categoria.MONITOR, p("\\b(monitor|pantalla)\\b"));
+        PALABRAS.put(Categoria.AURICULAR, p("\\b(auriculares?|headset|headphones?|vincha|cascos?)\\b"));
         PALABRAS.put(Categoria.FUENTE, p("\\b(fuente|psu)\\b"));
         PALABRAS.put(Categoria.GABINETE, p("\\b(gabinete|torre|mid ?tower|full ?tower)\\b"));
         PALABRAS.put(Categoria.MOTHERBOARD, p("\\b(mother|motherboard|placa madre|placa base|mainboard)\\b"));
@@ -60,16 +65,25 @@ public class ClasificadorLocal {
         MODELOS.put(Categoria.DISCO, p("\\b(m\\.?2|sata|barracuda|\\d+ ?tb)\\b"));
         MODELOS.put(Categoria.FUENTE, p("\\b(80 ?plus|\\d{3,4} ?w)\\b"));
         MODELOS.put(Categoria.GABINETE, p("\\b(case)\\b"));
+        MODELOS.put(Categoria.MONITOR, p("\\b\\d{2}(?:[.,]\\d)? ?(\"|pulgadas)|\\b\\d{2,3} ?hz\\b"));
+        MODELOS.put(Categoria.MOUSE, p("\\b\\d{3,5} ?dpi\\b"));
+        MODELOS.put(Categoria.TECLADO, p("\\b(mecanico|tkl|switch(es)? (red|blue|brown))\\b"));
+        MODELOS.put(Categoria.AURICULAR, p("\\b(7\\.1|surround)\\b"));
     }
 
-    private static final Map<Categoria, String> DESCRIPCIONES = Map.of(
-            Categoria.PLACA_VIDEO, "Placa de video para PC de escritorio. Procesa los gráficos: juegos, edición de video y diseño.",
-            Categoria.PROCESADOR, "Procesador (CPU) para PC de escritorio. Es el cerebro de la computadora: ejecuta los programas y los juegos.",
-            Categoria.RAM, "Memoria RAM para PC. Permite tener más programas y pestañas abiertos a la vez y que todo funcione más fluido.",
-            Categoria.FUENTE, "Fuente de alimentación para PC. Le da energía estable y segura a todos los componentes.",
-            Categoria.MOTHERBOARD, "Motherboard (placa madre) para PC. Conecta todos los componentes: procesador, memoria, placa de video y discos.",
-            Categoria.GABINETE, "Gabinete para PC. Aloja y protege los componentes y ayuda a mantenerlos bien ventilados.",
-            Categoria.OTRO, "Componente o accesorio para PC.");
+    // Map.ofEntries y no Map.of: Map.of admite como máximo 10 pares y ya hay más categorías.
+    private static final Map<Categoria, String> DESCRIPCIONES = Map.ofEntries(
+            Map.entry(Categoria.PLACA_VIDEO, "Placa de video para PC de escritorio. Procesa los gráficos: juegos, edición de video y diseño."),
+            Map.entry(Categoria.PROCESADOR, "Procesador (CPU) para PC de escritorio. Es el cerebro de la computadora: ejecuta los programas y los juegos."),
+            Map.entry(Categoria.RAM, "Memoria RAM para PC. Permite tener más programas y pestañas abiertos a la vez y que todo funcione más fluido."),
+            Map.entry(Categoria.FUENTE, "Fuente de alimentación para PC. Le da energía estable y segura a todos los componentes."),
+            Map.entry(Categoria.MOTHERBOARD, "Motherboard (placa madre) para PC. Conecta todos los componentes: procesador, memoria, placa de video y discos."),
+            Map.entry(Categoria.GABINETE, "Gabinete para PC. Aloja y protege los componentes y ayuda a mantenerlos bien ventilados."),
+            Map.entry(Categoria.TECLADO, "Teclado para PC. Para escribir y jugar con comodidad y respuesta rápida."),
+            Map.entry(Categoria.MOUSE, "Mouse para PC. Permite moverte y apuntar con precisión, tanto para trabajar como para jugar."),
+            Map.entry(Categoria.MONITOR, "Monitor para PC. Es la pantalla donde ves todo: juegos, películas y trabajo."),
+            Map.entry(Categoria.AURICULAR, "Auriculares para PC. Para escuchar los juegos y la música, y hablar con tu equipo."),
+            Map.entry(Categoria.OTRO, "Componente o accesorio para PC."));
 
     public Ficha analizar(String nombre) {
         String t = normalizar(nombre);
@@ -83,6 +97,11 @@ public class ClasificadorLocal {
         for (var e : PALABRAS.entrySet()) if (e.getValue().matcher(t).find()) return e.getKey();
         for (var e : MODELOS.entrySet()) if (e.getValue().matcher(t).find()) return e.getKey();
         return Categoria.OTRO;
+    }
+
+    /** Descripción base de una categoría (la usa el test que controla que ninguna falte). */
+    String descripcionDe(Categoria c) {
+        return describir(c, "");
     }
 
     private String describir(Categoria c, String t) {
@@ -127,6 +146,13 @@ public class ClasificadorLocal {
         agregar(d, t, "\\b(\\d{4,5}) ?rpm\\b", m -> m.group(1) + " RPM");
         agregar(d, t, "\\b(am[45]|lga ?\\d{4})\\b", m -> "Socket " + m.group(1).toUpperCase(Locale.ROOT).replace(" ", ""));
         agregar(d, t, "\\b(micro ?atx|matx|mini ?itx|itx|e-?atx|atx)\\b", m -> "Formato " + formato(m.group(1)));
+        // Periféricos
+        agregar(d, t, "\\b(\\d{2}(?:[.,]\\d)?) ?(\"|pulgadas)", m -> "Pantalla de " + m.group(1) + "\"");
+        agregar(d, t, "\\b(\\d{2,3}) ?hz\\b", m -> m.group(1) + " Hz");
+        agregar(d, t, "\\b(\\d{3,5}) ?dpi\\b", m -> "Sensor de " + m.group(1) + " DPI");
+        agregar(d, t, "\\bmecanico\\b", m -> "Mecánico");
+        agregar(d, t, "\\b(inalambric[oa]s?|wireless)\\b", m -> "Inalámbrico");
+        agregar(d, t, "\\b7\\.1\\b", m -> "Sonido envolvente 7.1");
         agregar(d, t, "\\b(\\d+) ?(fans|ventiladores|coolers)\\b", m -> m.group(1) + " ventiladores");
         agregar(d, t, "\\bvidrio( templado)?\\b", m -> "Lateral de vidrio templado");
         agregar(d, t, "\\b(rgb|argb)\\b", m -> "Iluminación " + m.group(1).toUpperCase(Locale.ROOT));

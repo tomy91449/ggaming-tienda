@@ -38,9 +38,27 @@
         <rect x="6" y="2" width="12" height="20" rx="1"/><circle cx="12" cy="15" r="3"/>
         <path d="M9 6h6M9 9h6"/>
     </th:block>
+    <th:block th:case="'TECLADO'">
+        <rect x="2" y="6" width="20" height="12" rx="2"/>
+        <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>
+    </th:block>
+    <th:block th:case="'MOUSE'">
+        <rect x="6" y="3" width="12" height="18" rx="6"/><path d="M12 7v4"/>
+    </th:block>
+    <th:block th:case="'MONITOR'">
+        <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+    </th:block>
+    <th:block th:case="'AURICULAR'">
+        <path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/>
+    </th:block>
     <th:block th:case="*">
         <path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>
     </th:block>
+</svg>
+
+<svg th:fragment="ubicacion" class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
 </svg>
 
 <svg th:fragment="buscar" class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor"

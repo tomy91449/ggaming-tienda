@@ -12,7 +12,7 @@ document.querySelectorAll("form[data-guardar]").forEach(function (form) {
   form.addEventListener("submit", function () {
     var boton = form.querySelector("button[type=submit]");
     boton.disabled = true;
-    boton.textContent = "Guardando...";
+    boton.textContent = form.dataset.espera || "Guardando...";
   });
 });
 
@@ -326,6 +326,16 @@ if (chat) {
     b.addEventListener("click", function () { enviar(b.textContent.trim()); });
   });
 }
+
+// Textareas con data-enter-envia: Enter envía el formulario, Shift+Enter hace salto de línea.
+document.querySelectorAll("[data-enter-envia]").forEach(function (campo) {
+  campo.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey && campo.value.trim()) {
+      e.preventDefault();
+      campo.form.requestSubmit();
+    }
+  });
+});
 
 // Vista previa de las fotos elegidas, antes de subirlas.
 var inputFotos = document.querySelector("[data-fotos]");

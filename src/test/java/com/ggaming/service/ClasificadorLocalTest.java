@@ -33,7 +33,16 @@ class ClasificadorLocalTest {
             "ASRock Z690 Phantom, MOTHERBOARD",
             "Gigabyte B550M Micro ATX, MOTHERBOARD",
             "Gabinete Sentey con 3 fans, GABINETE",
-            "Mouse Logitech G203, OTRO"
+            "Mouse Logitech G203, MOUSE",
+            "Logitech G502 25600 DPI, MOUSE",
+            "Teclado Redragon Kumara mecánico RGB, TECLADO",
+            "HyperX Alloy TKL switches red, TECLADO",
+            "Monitor Samsung 24 pulgadas 144Hz, MONITOR",
+            "LG UltraGear 27\" 165Hz, MONITOR",
+            "Auriculares HyperX Cloud II 7.1, AURICULAR",
+            "Headset Logitech G435 inalámbrico, AURICULAR",
+            "Pad para mouse XL, MOUSE",
+            "Webcam Logitech C920, OTRO"
     })
     void clasificaPorNombre(String nombre, Categoria esperada) {
         assertThat(clasificador.analizar(nombre).categoria()).isEqualTo(esperada);
@@ -53,6 +62,24 @@ class ClasificadorLocalTest {
                 .containsExactly("Kit de 2 x 8 GB", "DDR4", "3200 MHz", "Latencia CL16");
         assertThat(clasificador.analizar("Fuente Corsair CV650 650W 80 Plus Bronze").datos())
                 .containsExactly("650 W de potencia", "Certificación 80 Plus Bronze");
+    }
+
+    @Test
+    void datosDePerifericos() {
+        assertThat(clasificador.analizar("Monitor Samsung 24 pulgadas 144Hz").datos())
+                .containsExactly("Pantalla de 24\"", "144 Hz");
+        assertThat(clasificador.analizar("Mouse Logitech G502 inalámbrico 25600 DPI").datos())
+                .containsExactly("Sensor de 25600 DPI", "Inalámbrico");
+        assertThat(clasificador.analizar("Teclado Redragon mecánico RGB").descripcion())
+                .startsWith("Teclado para PC").doesNotContainIgnoringCase("redragon");
+    }
+
+    @Test
+    void todasLasCategoriasTienenDescripcion() {
+        // Si alguien agrega una categoría nueva y se olvida la descripción, este test avisa.
+        for (Categoria c : Categoria.values()) {
+            assertThat(clasificador.descripcionDe(c)).as("descripción de " + c).isNotBlank();
+        }
     }
 
     @Test

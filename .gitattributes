@@ -1,0 +1,15 @@
+# Saltos de línea: Git los normaliza; los archivos que corren en Linux van SIEMPRE con LF
+# (con CRLF de Windows, bash falla con "\r: command not found").
+* text=auto
+*.sh text eol=lf
+mvnw text eol=lf
+Dockerfile text eol=lf
+Caddyfile text eol=lf
+*.yml text eol=lf
+*.cmd text eol=crlf
+
+# Binarios: no tocarlos
+*.png binary
+*.jpg binary
+*.db binary
+*.jar binary

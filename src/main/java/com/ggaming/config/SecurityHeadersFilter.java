@@ -31,6 +31,8 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
             "font-src https://fonts.gstatic.com",
             "img-src 'self' data: blob:",
             "connect-src 'self'",
+            // Único contenido externo permitido en un iframe: el mapa de Google (sección "Dónde estamos").
+            "frame-src https://www.google.com https://maps.google.com",
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",

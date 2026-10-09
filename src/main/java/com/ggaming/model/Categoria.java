@@ -14,6 +14,10 @@ public enum Categoria {
     FUENTE("Fuentes"),
     MOTHERBOARD("Motherboards"),
     GABINETE("Gabinetes"),
+    TECLADO("Teclados"),
+    MOUSE("Mouse"),
+    MONITOR("Monitores"),
+    AURICULAR("Auriculares"),
     OTRO("Otros");
 
     private final String etiqueta; // texto que ve el usuario
